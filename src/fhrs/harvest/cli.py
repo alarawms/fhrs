@@ -7,7 +7,7 @@ import json
 import sys
 from pathlib import Path
 
-from fhrs.core.config import REGISTRY_PATH, get_settings
+from fhrs.core.config import get_settings
 from fhrs.core.db import init_schema, make_engine, session_scope
 from fhrs.harvest.ingest import ingest_bytes
 from fhrs.harvest.replay import replay
@@ -24,7 +24,7 @@ def _wiring():
         profile.data_path("gazetteer"),
         profile.data_path("boundary"),
     )
-    registry = load_registry(REGISTRY_PATH)
+    registry = load_registry(settings.resolved_registry_path())
     engine = make_engine(settings)
     init_schema(engine)
     return settings, engine, geo, registry
@@ -58,7 +58,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "replay":
         with session_scope(engine) as session:
-            report = replay(session, geo=geo, registry=registry)
+            report = replay(
+                session, geo=geo, registry=registry, payload_root=settings.payload_dir
+            )
         print(json.dumps(report.__dict__, indent=2))
         return 0
 

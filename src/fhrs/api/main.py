@@ -2,23 +2,21 @@
 (N6 — no ad-hoc aggregates here), a minimal sample listing, and the static web app.
 """
 
-from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from sqlalchemy import func, select
 
-from fhrs.core.config import REPO_ROOT, Settings, get_settings
+from fhrs.core.config import Settings, get_settings
 from fhrs.core.db import make_engine, make_session_factory
 from fhrs.core.models import Sample, Visibility
 from fhrs.stats.build import latest_snapshot
-
-WEB_DIR = REPO_ROOT / "web"
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     profile = settings.load_profile()
+    web_dir = settings.resolved_web_dir()
     engine = make_engine(settings)
     sessions = make_session_factory(engine)
 
@@ -81,11 +79,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/", include_in_schema=False)
     def index() -> FileResponse:
-        return FileResponse(WEB_DIR / "index.html")
+        return FileResponse(web_dir / "index.html")
 
     @app.get("/app.js", include_in_schema=False)
     def app_js() -> FileResponse:
-        return FileResponse(WEB_DIR / "app.js")
+        return FileResponse(web_dir / "app.js")
 
     return app
 

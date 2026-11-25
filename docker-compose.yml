@@ -27,6 +27,11 @@ services:
       FHRS_PAYLOAD_DIR: /data/payloads
       FHRS_NUMBERS_OUT: /data/build/numbers.json
       FHRS_DISK_WATERMARK_PCT: ${FHRS_DISK_WATERMARK_PCT:-90}
+      # the image carries the profiles + registry under /app (no repo checkout
+      # around a pip-installed package)
+      FHRS_COUNTRIES_DIR: /app/countries
+      FHRS_REGISTRY_PATH: /app/registry/checklists.yaml
+      FHRS_WEB_DIR: /app/web
     volumes:
       - payload-data:/data
     depends_on:

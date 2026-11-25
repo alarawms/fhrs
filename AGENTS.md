@@ -21,6 +21,10 @@ Root `.env` → `FHRS_COUNTRY_CODE`. Everything country-specific lives in
 `countries/<code>/` + `countries/<code>.yaml` — never in Python. Add a country by
 copying `countries/template.yaml` and its data directory; no code changes allowed.
 
+Data-directory resolution: defaults assume a repo checkout; deployed (pip-installed)
+images set `FHRS_COUNTRIES_DIR`, `FHRS_REGISTRY_PATH`, `FHRS_WEB_DIR` instead — see
+docker-compose.yml. Never derive these from the package's `__file__`.
+
 ## Rules of the house
 
 - `fhrs.rules` is pure: no I/O, no settings access. Heavily property-tested.

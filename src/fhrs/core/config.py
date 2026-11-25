@@ -15,6 +15,8 @@ from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+# Dev-checkout defaults. Deployed images override with FHRS_COUNTRIES_DIR /
+# FHRS_REGISTRY_PATH — a pip-installed package has no meaningful parents[3].
 COUNTRIES_DIR = REPO_ROOT / "countries"
 REGISTRY_PATH = REPO_ROOT / "registry" / "checklists.yaml"
 
@@ -79,22 +81,37 @@ class Settings(BaseSettings):
     payload_dir: Path = REPO_ROOT / "data" / "payloads"
     numbers_out: Path = REPO_ROOT / "build" / "numbers.json"
     disk_watermark_pct: int = Field(default=90, ge=1, le=99)
+    # Deployment overrides (containers): where the country profiles and the
+    # checklist registry live when there is no repo checkout around the package.
+    countries_dir: Path | None = None
+    registry_path: Path | None = None
+    web_dir: Path | None = None
 
     @field_validator("country_code")
     @classmethod
     def _upper(cls, v: str) -> str:
         return v.strip().upper()
 
+    def resolved_countries_dir(self) -> Path:
+        return self.countries_dir or COUNTRIES_DIR
+
+    def resolved_registry_path(self) -> Path:
+        return self.registry_path or REGISTRY_PATH
+
+    def resolved_web_dir(self) -> Path:
+        return self.web_dir or (REPO_ROOT / "web")
+
     def load_profile(self) -> CountryProfile:
-        path = COUNTRIES_DIR / f"{self.country_code.lower()}.yaml"
+        countries = self.resolved_countries_dir()
+        path = countries / f"{self.country_code.lower()}.yaml"
         if not path.is_file():
-            available = sorted(p.stem.upper() for p in COUNTRIES_DIR.glob("*.yaml"))
+            available = sorted(p.stem.upper() for p in countries.glob("*.yaml"))
             raise FileNotFoundError(
                 f"no country profile for {self.country_code!r} ({path}); "
                 f"available: {available}; add one from countries/template.yaml"
             )
         doc = yaml.safe_load(path.read_text(encoding="utf-8"))
-        profile = CountryProfile(**doc, data_dir=COUNTRIES_DIR / self.country_code.lower())
+        profile = CountryProfile(**doc, data_dir=countries / self.country_code.lower())
         if profile.code != self.country_code:
             raise ValueError(
                 f"profile file {path.name} declares code={profile.code!r}, "

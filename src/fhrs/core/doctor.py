@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 from sqlalchemy import inspect, text
 
-from fhrs.core.config import REGISTRY_PATH, get_settings
+from fhrs.core.config import get_settings
 from fhrs.core.db import make_engine
 from fhrs.rules.checklists import load_registry
 
@@ -44,7 +44,7 @@ def run_checks(check_db: bool = True) -> list[Check]:
         checks.append(Check("country_profile", False, str(exc)))
 
     try:
-        registry = load_registry(REGISTRY_PATH)
+        registry = load_registry(settings.resolved_registry_path())
         checks.append(
             Check("checklist_registry", True, f"{len(registry.mapping)} checklists mapped")
         )
