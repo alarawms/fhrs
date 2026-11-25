@@ -7,7 +7,7 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-from sqlalchemy import func, select
+from sqlalchemy import case, func, literal, select
 from sqlalchemy.orm import Session
 
 from fhrs.core.models import (
@@ -39,11 +39,19 @@ def compute_payload(session: Session, country_code: str) -> dict:
         ).all()
     )
     by_bucket = {
-        bucket or "unmapped": n
+        bucket: n
         for bucket, n in session.execute(
-            select(Sample.content_bucket, func.count())
+            select(
+                case(
+                    (Sample.content_bucket.is_not(None), Sample.content_bucket),
+                    # checklist present but missing from the registry (loud queue, N5)
+                    (Sample.checklist_id.is_not(None), literal("unmapped")),
+                    else_=literal("no_checklist"),
+                ),
+                func.count(),
+            )
             .where(Sample.visibility.in_(public))
-            .group_by(Sample.content_bucket)
+            .group_by(Sample.content_bucket, Sample.checklist_id.is_not(None))
         ).all()
     }
     with_coords = session.scalar(

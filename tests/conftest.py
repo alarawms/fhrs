@@ -40,6 +40,13 @@ def registry():
     return load_registry(REGISTRY_PATH)
 
 
+@pytest.fixture(scope="session")
+def profile():
+    from fhrs.core.config import Settings
+
+    return Settings(country_code="SA", database_url="sqlite://").load_profile()
+
+
 @pytest.fixture()
 def engine(tmp_path):
     eng = create_engine(f"sqlite:///{tmp_path / 'test.db'}")

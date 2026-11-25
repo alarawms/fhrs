@@ -21,3 +21,15 @@ aliases:
   - المملكة العربية السعودية
   - السعودية
   - السعوديه
+
+# Wire-verified ENA Portal API query strings per alias (lowercase key). The Portal
+# wildcard is unreliable in multi-word quoted strings; these exact forms returned
+# rows against the production API (verified 2026-09-19/20 by the predecessor
+# system). Aliases absent here fall back to `country="<alias>*"` when
+# whitespace-free, and are skipped (loudly, in the harvest log) otherwise.
+ena_queries:
+  saudi: 'country="Saudi*"'
+  ksa: 'country="KSA*"'
+  kingdom of saudi arabia: 'country="Kingdom of Saudi*"'
+  السعودية: 'country="السعودية*"'
+  المملكة العربية السعودية: 'country="المملكة*"'

@@ -47,6 +47,9 @@ map:
   ERC000022: soil
   # GSC MIxS host associated — generic non-human host, no stronger signal available.
   ERC000013: host_associated
+  # ENA default sample checklist — the catch-all every record can claim; carries no
+  # content signal, so it is deliberately "other" (a reviewed choice, N5).
+  ERC000011: other
 
   # --- NCBI package-style named checklists ---------------------------------------
   # Ambiguous microbial isolate packages (MIGS.ba, Microbe) deliberately stay
