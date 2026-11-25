@@ -60,7 +60,7 @@ def test_parse_date():
 @pytest.mark.parametrize(
     ("alias", "expected"),
     [
-        ("KAUST", 'center_name="*KAUST*"'),                       # single word: wildcard
+        ("KAUST", 'center_name="*KAUST*"'),  # single word: wildcard
         ("Aramco", 'center_name="*Aramco*"'),
         ("King Saud University", 'center_name="King Saud University"'),  # exact
     ],
@@ -125,9 +125,7 @@ def _fake_client_with_rows(rows, log):
     def fetch(path, params):
         log.append((path, dict(params)))
         q = params.get("query", "")
-        if path == "/search" and (
-            q == 'country="Saudi*"' or q.startswith('(country="Saudi*"')
-        ):
+        if path == "/search" and (q == 'country="Saudi*"' or q.startswith('(country="Saudi*"')):
             return 200, json.dumps(rows).encode()
         return 200, b"[]"
 
@@ -138,7 +136,11 @@ def test_harvest_flow_with_real_ena_rows(session, profile, geo, registry, payloa
     wire_log: list = []
     client = _fake_client_with_rows(FIXTURE_ROWS, wire_log)
     report = harvest_ena(
-        session, client, profile=profile, geo=geo, registry=registry,
+        session,
+        client,
+        profile=profile,
+        geo=geo,
+        registry=registry,
         payload_root=payload_root,
     )
     assert report.queries >= 3  # country + geo box + institutions
@@ -147,8 +149,14 @@ def test_harvest_flow_with_real_ena_rows(session, profile, geo, registry, payloa
 
     by_acc = {
         a: session.scalar(select(Sample).where(Sample.canonical_accession == a))
-        for a in ("SAMEA10033100", "SAMEA10033102", "SAMEA103936009",
-                  "SAMEA103936010", "SAMEA104071975", "SAMEA104416030")
+        for a in (
+            "SAMEA10033100",
+            "SAMEA10033102",
+            "SAMEA103936009",
+            "SAMEA103936010",
+            "SAMEA104071975",
+            "SAMEA104416030",
+        )
     }
     assert [s.tier for s in by_acc.values()] == ["A", "A", "A", "A", "C", "C"]
     # coords persisted from the real location strings
@@ -157,9 +165,7 @@ def test_harvest_flow_with_real_ena_rows(session, profile, geo, registry, payloa
     assert by_acc["SAMEA104071975"].content_bucket == "other"
     assert by_acc["SAMEA10033100"].content_bucket == "environmental"
     # ERS secondary accession resolves to the same canonical sample (N3)
-    alias = session.scalar(
-        select(SampleAlias).where(SampleAlias.accession == "ERS1735868")
-    )
+    alias = session.scalar(select(SampleAlias).where(SampleAlias.accession == "ERS1735868"))
     assert alias is not None and alias.sample_id == by_acc["SAMEA104071975"].id
 
     # cursor persisted: high water = max(last_updated) = 2023-01-03
@@ -170,7 +176,11 @@ def test_harvest_flow_with_real_ena_rows(session, profile, geo, registry, payloa
     # incremental run: the same rows are idempotent, and the wire query is scoped
     wire_log.clear()
     report2 = harvest_ena(
-        session, client, profile=profile, geo=geo, registry=registry,
+        session,
+        client,
+        profile=profile,
+        geo=geo,
+        registry=registry,
         payload_root=payload_root,
     )
     saudi_queries = [

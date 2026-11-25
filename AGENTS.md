@@ -9,7 +9,8 @@ file documents, update this file in the same commit.
 - Setup: `python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'`
 - Tests (fast): `.venv/bin/pytest tests/unit tests/property -q`
 - Tests (Postgres integration): `docker compose up -d db && .venv/bin/pytest tests/integration -q`
-- Stack: `docker compose up -d --build` (db + api + web at :8081)
+- Stack: `docker compose up -d --build` (db + api + scheduler, web at :8081)
+- Harvest one source: `docker compose exec api fhrs-harvest {ena|ncbi|ddbj} [--full] [--only-query KEY] [--max-per-query N]`
 - Demo: `FHRS_DATABASE_URL=sqlite:///./db/demo.sqlite .venv/bin/python scripts/demo_ingest.py`
 - Doctor (startup checks, N9): `.venv/bin/fhrs-doctor`
 - Stats read model rebuild (N6): `.venv/bin/fhrs-stats build`

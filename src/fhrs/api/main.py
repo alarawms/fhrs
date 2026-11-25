@@ -2,7 +2,6 @@
 (N6 — no ad-hoc aggregates here), a minimal sample listing, and the static web app.
 """
 
-
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from sqlalchemy import func, select

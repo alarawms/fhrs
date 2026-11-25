@@ -8,7 +8,7 @@ from fhrs.rules.merge import decide
 @pytest.mark.parametrize(
     ("existing", "incoming", "action", "value"),
     [
-        ("2023-05-14", None, "keep", "2023-05-14"),       # never erased (N1)
+        ("2023-05-14", None, "keep", "2023-05-14"),  # never erased (N1)
         ("2023-05-14", "", "keep", "2023-05-14"),
         ("2023-05-14", "missing", "keep", "2023-05-14"),
         (None, "2023-05-14", "fill", "2023-05-14"),

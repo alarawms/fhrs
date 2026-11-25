@@ -157,9 +157,7 @@ class UnmappedChecklist(Base):
     example_accession: Mapped[str | None] = mapped_column(String(64), nullable=True)
     # idempotence guard: a replay reprocesses the same source events, so an event
     # counts only once no matter how many times it passes through the pipeline (N2)
-    last_event_id: Mapped[int | None] = mapped_column(
-        ForeignKey("source_events.id"), nullable=True
-    )
+    last_event_id: Mapped[int | None] = mapped_column(ForeignKey("source_events.id"), nullable=True)
     first_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     last_seen: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow

@@ -12,11 +12,11 @@ from dataclasses import dataclass
 
 
 class AllowedAction(str, enum.Enum):
-    APPROVE_GEO = "approve_geo"      # tier C curation sample → public
-    REJECT = "reject"                # curation sample → out of scope (hidden)
+    APPROVE_GEO = "approve_geo"  # tier C curation sample → public
+    REJECT = "reject"  # curation sample → out of scope (hidden)
     FLAG_FOR_REVIEW = "flag_for_review"  # any sample → open review (always safe)
-    HIDE = "hide"                    # public sample → hidden (humans only)
-    UNHIDE = "unhide"                # hidden sample → public (humans only)
+    HIDE = "hide"  # public sample → hidden (humans only)
+    UNHIDE = "unhide"  # hidden sample → public (humans only)
 
 
 class ActorKind(str, enum.Enum):

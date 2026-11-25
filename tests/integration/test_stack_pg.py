@@ -15,9 +15,7 @@ from fhrs.stats.build import build_snapshot
 
 pytestmark = pytest.mark.integration
 
-DB_URL = os.environ.get(
-    "FHRS_DATABASE_URL", "postgresql+psycopg://fhrs:fhrs@localhost:15432/fhrs"
-)
+DB_URL = os.environ.get("FHRS_DATABASE_URL", "postgresql+psycopg://fhrs:fhrs@localhost:15432/fhrs")
 
 
 @pytest.fixture(scope="module")
@@ -27,9 +25,16 @@ def pg_engine():
         conn.execute(text("select 1"))
     init_schema(engine)  # idempotent; alembic 0001 created the same metadata
     for table in (
-        "attribute_history", "sample_attributes", "merge_events", "sample_aliases",
-        "curation_events", "samples", "studies", "source_events",
-        "unmapped_checklists", "stats_snapshots",
+        "attribute_history",
+        "sample_attributes",
+        "merge_events",
+        "sample_aliases",
+        "curation_events",
+        "samples",
+        "studies",
+        "source_events",
+        "unmapped_checklists",
+        "stats_snapshots",
     ):
         with engine.begin() as conn:
             conn.execute(text(f"truncate table {table} cascade"))
@@ -49,7 +54,9 @@ def test_alembic_schema_matches_orm_metadata(pg_engine):
     for table_name, table in Base.metadata.tables.items():
         live_cols = {c["name"] for c in live.get_columns(table_name)}
         model_cols = {c.name for c in table.columns}
-        assert live_cols == model_cols, f"{table_name}: live^{live_cols - model_cols} model^{model_cols - live_cols}"
+        assert live_cols == model_cols, (
+            f"{table_name}: live^{live_cols - model_cols} model^{model_cols - live_cols}"
+        )
 
 
 def test_full_pipeline_on_postgres(pg_engine, geo, registry, tmp_path):

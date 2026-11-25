@@ -81,6 +81,9 @@ class Settings(BaseSettings):
     payload_dir: Path = REPO_ROOT / "data" / "payloads"
     numbers_out: Path = REPO_ROOT / "build" / "numbers.json"
     disk_watermark_pct: int = Field(default=90, ge=1, le=99)
+    # Hours between scheduled harvest cycles (fhrs-harvest schedule; N1 keeps a
+    # re-run cheap: unchanged records are payload-hash no-ops).
+    harvest_interval_hours: float = Field(default=24.0, gt=0)
     # Deployment overrides (containers): where the country profiles and the
     # checklist registry live when there is no repo checkout around the package.
     countries_dir: Path | None = None

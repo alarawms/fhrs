@@ -52,8 +52,12 @@ map:
   ERC000011: other
 
   # --- NCBI package-style named checklists ---------------------------------------
-  # Ambiguous microbial isolate packages (MIGS.ba, Microbe) deliberately stay
-  # "other" rather than guess "metagenome".
+  # Ambiguous microbial isolate packages (MIGS.ba, Microbe) deliberately map to
+  # "other" rather than guess "metagenome" — a reviewed choice (N5), so they must
+  # NOT fall into the unmapped queue.
+  Microbe: other
+  Microbe.1.0: other
+  MIGS.ba: other
   Metagenome.environmental.1.0: metagenome
   Metagenome or environmental: metagenome
   MIMAG.6.0: metagenome

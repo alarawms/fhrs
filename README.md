@@ -19,7 +19,7 @@ each learned from a production failure in the predecessor system).
 ## Quick start
 
 ```bash
-docker compose up -d --build        # db + api; web UI and API on :8081
+docker compose up -d --build        # db + api + scheduler; web UI and API on :8081
 # or locally:
 python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'
 .venv/bin/pytest tests/unit tests/property -q
@@ -27,6 +27,23 @@ python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'
 ```
 
 Then open `http://localhost:8081/` — the page renders the active country's lens.
+
+## Harvesting (Stage 1)
+
+All three INSDC archives harvest through the same payload store + ingest pipeline:
+
+```bash
+docker compose exec api fhrs-harvest ena      # ENA Portal (country + geo-box + center queries)
+docker compose exec api fhrs-harvest ncbi     # E-utilities BioSample (esearch → efetch chunks)
+docker compose exec api fhrs-harvest ddbj     # DDBJ search API (date-windowed under the 10k cap)
+```
+
+Each source keeps per-query cursors (`harvest_states`): ENA and DDBJ incrementals are
+bounded by a real server-side date filter; NCBI's date filters do not constrain the
+discovery terms, so its runs re-walk the corpus and lean on idempotent ingest. The
+`scheduler` service runs all three every `FHRS_HARVEST_INTERVAL_HOURS` (default 24).
+The same physical sample arriving from several archives is one canonical record —
+the shared INSDC numeric accession is the dedup key (`SAMN… ≡ SAMEA… ≡ SAMD…`).
 
 ## Add your country
 

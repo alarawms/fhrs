@@ -33,3 +33,16 @@ ena_queries:
   kingdom of saudi arabia: 'country="Kingdom of Saudi*"'
   السعودية: 'country="السعودية*"'
   المملكة العربية السعودية: 'country="المملكة*"'
+
+# Wire-verified DDBJ search-API geoLocName values per alias (lowercase key).
+# geoLocName is a PREFIX match, so the short form "Saudi" catches both "Saudi" and
+# "Saudi Arabia: …" — the full alias would miss the bare form (verified live by the
+# predecessor system 2026-10-01: geoLocName=Saudi → 56,997; geoLocName=KSA → 100).
+ddbj_queries:
+  saudi: Saudi
+  ksa: KSA
+
+# Wire-verified NCBI esearch terms per alias, where the default
+# (`<alias>[geo_loc_name]`, quoted when multi-word) is not what works. Empty here:
+# the defaults reproduce the verified terms for this country's aliases.
+ncbi_queries: {}

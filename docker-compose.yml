@@ -38,6 +38,30 @@ services:
       db:
         condition: service_healthy
 
+  scheduler:
+    # Stage-1 scheduled harvest: cycles every source, then sleeps. The image's
+    # entrypoint exec's any non-"serve" command verbatim (N9), so no rebuild is
+    # needed to change the schedule — override FHRS_HARVEST_INTERVAL_HOURS.
+    build: .
+    command: ["fhrs-harvest", "schedule"]
+    restart: unless-stopped
+    environment:
+      FHRS_COUNTRY_CODE: ${FHRS_COUNTRY_CODE:?set FHRS_COUNTRY_CODE in the root .env}
+      FHRS_DATABASE_URL: postgresql+psycopg://fhrs:fhrs@db:5432/fhrs
+      FHRS_PAYLOAD_DIR: /data/payloads
+      FHRS_NUMBERS_OUT: /data/build/numbers.json
+      FHRS_DISK_WATERMARK_PCT: ${FHRS_DISK_WATERMARK_PCT:-90}
+      FHRS_HARVEST_INTERVAL_HOURS: ${FHRS_HARVEST_INTERVAL_HOURS:-24}
+      FHRS_COUNTRIES_DIR: /app/countries
+      FHRS_REGISTRY_PATH: /app/registry/checklists.yaml
+    volumes:
+      - payload-data:/data
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_started  # api's entrypoint runs alembic + doctor first
+
 volumes:
   pgdata:
   payload-data:
