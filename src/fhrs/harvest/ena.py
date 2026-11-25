@@ -136,9 +136,7 @@ def harvest_ena(
             session.commit()  # window checkpoint: crash-safe resume
 
         if high_water is not None:
-            state.high_water = dt.datetime.combine(
-                high_water, dt.time.min, tzinfo=dt.UTC
-            )
+            state.high_water = dt.datetime.combine(high_water, dt.time.min, tzinfo=dt.UTC)
         state.offset = 0
         state.status = "done"
         session.commit()

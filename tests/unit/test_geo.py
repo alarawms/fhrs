@@ -30,14 +30,14 @@ def test_normalise_country(geo, raw, expected):
 @pytest.mark.parametrize(
     ("lat", "lon", "expected"),
     [
-        (24.71, 46.68, "land"),   # Riyadh
-        (21.54, 39.17, "land"),   # Jeddah
-        (22.31, 39.10, "land"),   # Thuwal / KAUST (coastal)
-        (21.00, 38.60, "eez"),    # central Red Sea, Saudi side of the median line
-        (30.04, 31.24, None),     # Cairo
-        (25.29, 51.53, None),     # Doha
-        (35.69, 51.39, None),     # Tehran
-        (29.532, 35.007, None),   # Aqaba (clipped by neighbours)
+        (24.71, 46.68, "land"),  # Riyadh
+        (21.54, 39.17, "land"),  # Jeddah
+        (22.31, 39.10, "land"),  # Thuwal / KAUST (coastal)
+        (21.00, 38.60, "eez"),  # central Red Sea, Saudi side of the median line
+        (30.04, 31.24, None),  # Cairo
+        (25.29, 51.53, None),  # Doha
+        (35.69, 51.39, None),  # Tehran
+        (29.532, 35.007, None),  # Aqaba (clipped by neighbours)
         (0.0, 0.0, None),
     ],
 )

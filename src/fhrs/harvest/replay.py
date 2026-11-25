@@ -32,9 +32,7 @@ def replay(
     report = IngestReport()
     events = session.scalars(select(SourceEvent).order_by(SourceEvent.id)).all()
     for event in events:
-        record = normalize(
-            event.source, json.loads(load_payload(payload_root, event.payload_path))
-        )
+        record = normalize(event.source, json.loads(load_payload(payload_root, event.payload_path)))
         apply_record(session, event, record, geo=geo, registry=registry, report=report)
         event.reprocessed_at = datetime.now(UTC)
         report.events += 1

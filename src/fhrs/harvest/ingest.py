@@ -123,13 +123,19 @@ def apply_record(
     if decision.coords and record.lat is None and record.lon is None:
         # The location string classified this record; persist the parsed coordinates
         # too (provenance: this event's payload), never leaving them in a string.
-        record = replace(
-            record, lat=str(decision.coords[0]), lon=str(decision.coords[1])
-        )
+        record = replace(record, lat=str(decision.coords[0]), lon=str(decision.coords[1]))
 
     sample = _resolve_sample(session, record, event, report)
     _merge_attributes(session, sample, record, event, report)
-    _apply_inclusion(sample, decision_fields=(decision.tier, decision.marine_eez, decision.evidence, decision.needs_geo_curation))
+    _apply_inclusion(
+        sample,
+        decision_fields=(
+            decision.tier,
+            decision.marine_eez,
+            decision.evidence,
+            decision.needs_geo_curation,
+        ),
+    )
     _link_study(session, sample, record)
     _bucket_checklist(session, sample, record, registry, report, event_id=event.id)
     if decision.needs_geo_curation:
@@ -172,7 +178,11 @@ def _resolve_sample(
 
 
 def _merge_attributes(
-    session: Session, sample: Sample, record: NormalizedRecord, event: SourceEvent, report: IngestReport
+    session: Session,
+    sample: Sample,
+    record: NormalizedRecord,
+    event: SourceEvent,
+    report: IngestReport,
 ) -> None:
     incoming = {
         "checklist_id": record.checklist_id,
@@ -186,9 +196,7 @@ def _merge_attributes(
     }
     for key in MERGED_FIELDS:
         current = getattr(sample, key)
-        outcome = merge_rules.decide(
-            None if current is None else str(current), incoming[key]
-        )
+        outcome = merge_rules.decide(None if current is None else str(current), incoming[key])
         if outcome.action == "keep":
             continue
         if outcome.action == "conflict":
@@ -249,18 +257,14 @@ def _set_field(
     )
 
 
-def _apply_inclusion(
-    sample: Sample, decision_fields: tuple[str | None, bool, list, bool]
-) -> None:
+def _apply_inclusion(sample: Sample, decision_fields: tuple[str | None, bool, list, bool]) -> None:
     tier, marine_eez, evidence, needs_geo_curation = decision_fields
     if tier:
         sample.tier = tier
     sample.marine_eez = marine_eez
     sample.evidence = evidence
     sample.needs_geo_curation = needs_geo_curation
-    sample.visibility = (
-        Visibility.curation.value if needs_geo_curation else Visibility.public.value
-    )
+    sample.visibility = Visibility.curation.value if needs_geo_curation else Visibility.public.value
 
 
 def _link_study(session: Session, sample: Sample, record: NormalizedRecord) -> None:

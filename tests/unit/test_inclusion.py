@@ -55,9 +55,7 @@ def test_tier_c_institution_inferred_needs_curation(geo):
 def test_tier_c_hint_only_institution(geo):
     # KAU's short alias collides with other abbreviations (country_check=true), so
     # the evidence is a hint — still tier C, still gated by the N8 policy guards.
-    d = classify(
-        "not collected", None, None, None, None, "King Abdulaziz University", None, geo
-    )
+    d = classify("not collected", None, None, None, None, "King Abdulaziz University", None, geo)
     assert d.tier == "C"
     assert d.needs_geo_curation is True
     assert d.evidence[0]["rule"] == "institution_hint_only"

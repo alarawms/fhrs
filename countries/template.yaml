@@ -28,11 +28,16 @@ branding:
 #                     properties.name are "land_and_territorial_waters" and
 #                     "marine_eez" — the Tier-B coordinate test.
 #
-# Optional extra keys:
+# Optional extra keys (all live in aliases.yaml):
 #   ena_queries       map of lowercase alias → wire-verified ENA Portal query
 #                     string. Needed for multi-word aliases: the Portal wildcard
 #                     is unreliable in quoted strings containing whitespace.
 #                     Verify against the live API before adding one.
+#   ncbi_queries      map of lowercase alias → wire-verified NCBI esearch term.
+#                     Default: `<alias>[geo_loc_name]`, quoted when multi-word.
+#   ddbj_queries      map of lowercase alias → wire-verified DDBJ geoLocName
+#                     value. geoLocName is a PREFIX match, so the shortest
+#                     distinctive form usually wins; default is the alias as-is.
 data:
   aliases: aliases.yaml
   institutions: institutions.yaml

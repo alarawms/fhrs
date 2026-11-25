@@ -75,9 +75,7 @@ def country_queries(aliases: list[str], ena_queries: dict[str, str]) -> list[tup
     return out
 
 
-def geo_box(
-    bounds: tuple[float, float, float, float], pad_degrees: float = 0.5
-) -> str:
+def geo_box(bounds: tuple[float, float, float, float], pad_degrees: float = 0.5) -> str:
     """geo_box1(lat_min, lon_min, lat_max, lon_max) from the boundary envelope
     (shapely bounds: minx, miny, maxx, maxy = lon/lat), padded so borderline
     records aren't lost to polygon precision. Discovery only — inclusion is

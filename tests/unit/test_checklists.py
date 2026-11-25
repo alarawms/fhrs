@@ -16,7 +16,7 @@ def test_registry_loads_and_buckets_are_valid(registry):
     ("checklist_id", "expected"),
     [
         ("ERC000047", "metagenome"),
-        ("ERC000047:v2", "metagenome"),       # version suffix splits at ":"
+        ("ERC000047:v2", "metagenome"),  # version suffix splits at ":"
         ("MIMAG", "metagenome"),
         ("Pathogen.cl", "pathogen"),
         ("MIMARKS.survey.soil.6.0", "soil"),
@@ -54,5 +54,5 @@ def test_every_fixture_checklist_maps_or_is_deliberately_unmapped(registry):
         checklist = payload.get("checklist")
         if checklist:
             seen[checklist] = registry.bucket_for(checklist)
-    assert seen["MADEUP.9.9"] is None            # the loud path
+    assert seen["MADEUP.9.9"] is None  # the loud path
     assert all(v is not None for k, v in seen.items() if k != "MADEUP.9.9")

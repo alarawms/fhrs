@@ -13,9 +13,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="fhrs-stats")
     sub = parser.add_subparsers(dest="command", required=True)
     p_build = sub.add_parser("build", help="rebuild the stats snapshot (N6)")
-    p_build.add_argument(
-        "--no-artifact", action="store_true", help="skip writing numbers.json"
-    )
+    p_build.add_argument("--no-artifact", action="store_true", help="skip writing numbers.json")
     args = parser.parse_args(argv)
 
     settings = get_settings()

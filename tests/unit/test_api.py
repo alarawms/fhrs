@@ -68,7 +68,7 @@ def test_samples_lists_public_only(client):
     assert accessions == {"SAMEA1110001", "SAMEA1110002", "SAMEA1110003"}
     assert body["total"] == 3
     # tier C record is in curation, not public
-    assert "SAMD3330001" not in accessions
+    assert "SAMEA3330001" not in accessions  # canonical form of SAMD3330001
     study_linked = {h["accession"]: h["study_linked"] for h in body["hits"]}
     assert study_linked["SAMEA1110002"] is False  # honest NULL, not a placeholder
 

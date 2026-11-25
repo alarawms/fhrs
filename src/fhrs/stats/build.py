@@ -27,9 +27,12 @@ def compute_payload(session: Session, country_code: str) -> dict:
     curation = [Visibility.curation.value]
 
     def count(vis: list[str]) -> int:
-        return session.scalar(
-            select(func.count()).select_from(Sample).where(Sample.visibility.in_(vis))
-        ) or 0
+        return (
+            session.scalar(
+                select(func.count()).select_from(Sample).where(Sample.visibility.in_(vis))
+            )
+            or 0
+        )
 
     by_tier = dict(
         session.execute(
@@ -54,28 +57,44 @@ def compute_payload(session: Session, country_code: str) -> dict:
             .group_by(Sample.content_bucket, Sample.checklist_id.is_not(None))
         ).all()
     }
-    with_coords = session.scalar(
-        select(func.count())
-        .select_from(Sample)
-        .where(Sample.visibility.in_(public), Sample.lat.is_not(None), Sample.lon.is_not(None))
-    ) or 0
-    with_date = session.scalar(
-        select(func.count())
-        .select_from(Sample)
-        .where(Sample.visibility.in_(public), Sample.collection_date.is_not(None))
-    ) or 0
-    marine = session.scalar(
-        select(func.count())
-        .select_from(Sample)
-        .where(Sample.visibility.in_(public), Sample.marine_eez.is_(True))
-    ) or 0
-    studies = session.scalar(
-        select(func.count(func.distinct(Sample.study_id)))
-        .where(Sample.visibility.in_(public), Sample.study_id.is_not(None))
-    ) or 0
-    dropped = session.scalar(
-        select(func.count()).select_from(SourceEvent).where(SourceEvent.tier.is_(None))
-    ) or 0
+    with_coords = (
+        session.scalar(
+            select(func.count())
+            .select_from(Sample)
+            .where(Sample.visibility.in_(public), Sample.lat.is_not(None), Sample.lon.is_not(None))
+        )
+        or 0
+    )
+    with_date = (
+        session.scalar(
+            select(func.count())
+            .select_from(Sample)
+            .where(Sample.visibility.in_(public), Sample.collection_date.is_not(None))
+        )
+        or 0
+    )
+    marine = (
+        session.scalar(
+            select(func.count())
+            .select_from(Sample)
+            .where(Sample.visibility.in_(public), Sample.marine_eez.is_(True))
+        )
+        or 0
+    )
+    studies = (
+        session.scalar(
+            select(func.count(func.distinct(Sample.study_id))).where(
+                Sample.visibility.in_(public), Sample.study_id.is_not(None)
+            )
+        )
+        or 0
+    )
+    dropped = (
+        session.scalar(
+            select(func.count()).select_from(SourceEvent).where(SourceEvent.tier.is_(None))
+        )
+        or 0
+    )
     events = session.scalar(select(func.count()).select_from(SourceEvent)) or 0
     unmapped = [
         {"checklist_id": row.checklist_id, "occurrences": row.occurrences}

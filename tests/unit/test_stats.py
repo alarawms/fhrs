@@ -34,9 +34,7 @@ def test_snapshot_matches_expected_corpus(session, corpus, tmp_path):
     assert payload["studies"] == EXPECTED["studies"]
     assert payload["source_events"] == EXPECTED["source_events"]
     assert payload["dropped_out_of_scope"] == EXPECTED["dropped_out_of_scope"]
-    assert payload["unmapped_checklists"] == [
-        {"checklist_id": "MADEUP.9.9", "occurrences": 1}
-    ]
+    assert payload["unmapped_checklists"] == [{"checklist_id": "MADEUP.9.9", "occurrences": 1}]
     assert (tmp_path / "numbers.json").exists()
 
 
@@ -53,13 +51,17 @@ def test_snapshot_equals_independent_recomputation(session, corpus):
     assert payload["samples"]["in_curation"] == rows.get("curation", 0)
     assert payload["samples"]["total"] == sum(rows.values())
     coords = session.execute(
-        text("select count(*) from samples where visibility='public' "
-             "and lat is not null and lon is not null")
+        text(
+            "select count(*) from samples where visibility='public' "
+            "and lat is not null and lon is not null"
+        )
     ).scalar()
     assert payload["samples"]["with_coordinates"] == coords
     studies = session.execute(
-        text("select count(distinct study_id) from samples "
-             "where visibility='public' and study_id is not null")
+        text(
+            "select count(distinct study_id) from samples "
+            "where visibility='public' and study_id is not null"
+        )
     ).scalar()
     assert payload["studies"] == studies
 

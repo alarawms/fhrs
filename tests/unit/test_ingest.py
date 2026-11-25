@@ -24,7 +24,9 @@ def test_corpus_counts(corpus, session):
     report = corpus
     assert report.events == 6
     assert report.samples_created == 4
-    assert report.samples_merged == 1
+    # fixture 03 contributes two previously-unseen aliases (the canonical SAMEA form
+    # of its SAMN primary, plus the native SAMN string) — one merge event each
+    assert report.samples_merged == 2
     assert report.dropped_out_of_scope == 1
     assert report.unmapped_checklists == ["MADEUP.9.9"]
     assert session.scalar(select(func.count()).select_from(Sample)) == 4
@@ -59,20 +61,27 @@ def test_n3_identity_resolved_before_visibility(session, corpus):
     aliases = set(
         session.scalars(select(SampleAlias.accession).where(SampleAlias.sample_id == s.id))
     )
-    assert aliases == {"SAMEA1110001", "SAMN2220001"}
-    merge = session.scalar(
-        select(MergeEvent).where(MergeEvent.canonical_sample_id == s.id)
+    # the NCBI payload's SAMN primary resolves through its SAMEA secondary; both the
+    # native string and its canonical SAMEA form are recorded as aliases (N3)
+    assert aliases == {"SAMEA1110001", "SAMN2220001", "SAMEA2220001"}
+    merged = set(
+        session.scalars(
+            select(MergeEvent.merged_accession).where(MergeEvent.canonical_sample_id == s.id)
+        )
     )
-    assert merge is not None and merge.merged_accession == "SAMN2220001"
+    assert merged == {"SAMN2220001", "SAMEA2220001"}
     # one canonical record — the second accession never created a twin
     assert session.scalar(select(func.count()).select_from(Sample)) == 4
 
 
 def test_n4_no_sentinel_studies(session, corpus):
     assert session.scalar(select(func.count()).select_from(Study)) == 2  # PRJEB1000, PRJDB9000
-    assert session.scalar(
-        select(func.count()).select_from(Study).where(Study.accession.like("NOSTUDY%"))
-    ) == 0
+    assert (
+        session.scalar(
+            select(func.count()).select_from(Study).where(Study.accession.like("NOSTUDY%"))
+        )
+        == 0
+    )
     # the study-less tier B sample is represented honestly: NULL, not a placeholder
     assert _sample(session, "SAMEA1110002").study_id is None
 
@@ -80,19 +89,18 @@ def test_n4_no_sentinel_studies(session, corpus):
 def test_tiers_visibility_and_curation_flag(session, corpus):
     by_accession = {
         a: _sample(session, a)
-        for a in ("SAMEA1110001", "SAMEA1110002", "SAMD3330001", "SAMEA1110003")
+        for a in ("SAMEA1110001", "SAMEA1110002", "SAMEA3330001", "SAMEA1110003")
     }
     assert by_accession["SAMEA1110001"].tier == "A"
     assert by_accession["SAMEA1110002"].tier == "B"
     assert by_accession["SAMEA1110003"].tier == "A"
-    c = by_accession["SAMD3330001"]
+    # SAMD3330001 is stored under its canonical SAMEA form (N3)
+    c = by_accession["SAMEA3330001"]
     assert c.tier == "C" and c.visibility == "curation" and c.needs_geo_curation
     for a in ("SAMEA1110001", "SAMEA1110002", "SAMEA1110003"):
         assert by_accession[a].visibility == "public"
     flag = session.scalar(
-        select(CurationEvent).where(
-            CurationEvent.sample_id == c.id, CurationEvent.status == "open"
-        )
+        select(CurationEvent).where(CurationEvent.sample_id == c.id, CurationEvent.status == "open")
     )
     assert flag is not None and flag.action == "flag_for_review"
 
@@ -105,14 +113,17 @@ def test_n5_unmapped_checklist_is_loud(session, corpus):
 
 
 def test_dropped_records_are_counted_not_stored(session, corpus):
-    assert session.scalar(
-        select(func.count()).select_from(Sample).where(
-            Sample.canonical_accession == "SAMN4440001"
+    assert (
+        session.scalar(
+            select(func.count())
+            .select_from(Sample)
+            .where(Sample.canonical_accession == "SAMEA4440001")
         )
-    ) == 0
-    event = session.scalar(
-        select(SourceEvent).where(SourceEvent.accession == "SAMN4440001")
+        == 0
     )
+    # the event is keyed by the canonical accession (the native SAMN string is in
+    # the stored payload + would be an alias had the record been in scope)
+    event = session.scalar(select(SourceEvent).where(SourceEvent.accession == "SAMEA4440001"))
     assert event.tier is None
 
 

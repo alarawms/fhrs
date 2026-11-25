@@ -11,7 +11,8 @@ from fhrs.curation.service import PolicyViolation, propose
 
 def _curation_sample(session):
     return session.scalar(
-        select(Sample).where(Sample.canonical_accession == "SAMD3330001")
+        # SAMD3330001's canonical form (N3 cross-archive identity)
+        select(Sample).where(Sample.canonical_accession == "SAMEA3330001")
     )
 
 
@@ -31,12 +32,13 @@ def test_agent_geo_approval_follows_the_guard(session, corpus):
 
 
 def test_agent_cannot_hide(session, corpus):
-    sample = session.scalar(
-        select(Sample).where(Sample.canonical_accession == "SAMEA1110001")
-    )
+    sample = session.scalar(select(Sample).where(Sample.canonical_accession == "SAMEA1110001"))
     with pytest.raises(PolicyViolation) as exc:
         propose(
-            session, sample, AllowedAction.HIDE, actor="geo-agent",
+            session,
+            sample,
+            AllowedAction.HIDE,
+            actor="geo-agent",
             actor_kind=ActorKind.AGENT,
         )
     assert any("human" in v for v in exc.value.violations)
@@ -44,11 +46,12 @@ def test_agent_cannot_hide(session, corpus):
 
 
 def test_geo_approval_rejected_for_tier_a(session, corpus):
-    sample = session.scalar(
-        select(Sample).where(Sample.canonical_accession == "SAMEA1110001")
-    )
+    sample = session.scalar(select(Sample).where(Sample.canonical_accession == "SAMEA1110001"))
     with pytest.raises(PolicyViolation):
         propose(
-            session, sample, AllowedAction.APPROVE_GEO, actor="curator",
+            session,
+            sample,
+            AllowedAction.APPROVE_GEO,
+            actor="curator",
             actor_kind=ActorKind.HUMAN,
         )
