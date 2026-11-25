@@ -188,3 +188,20 @@ class StatsSnapshot(Base):
     country_code: Mapped[str] = mapped_column(String(2), index=True)
     built_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     payload: Mapped[dict] = mapped_column(JSON)
+
+
+class HarvestState(Base):
+    """Per-(source, query) harvest cursor (Stage 1). `high_water` is the max
+    last_updated date seen — incremental harvests resume from it; `offset` is the
+    client-side window position for crash resume within a run."""
+
+    __tablename__ = "harvest_states"
+
+    source: Mapped[str] = mapped_column(String(16), primary_key=True)
+    query_key: Mapped[str] = mapped_column(String(128), primary_key=True)
+    offset: Mapped[int] = mapped_column(Integer, default=0)
+    high_water: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    status: Mapped[str] = mapped_column(String(16), default="running")  # running|done
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )

@@ -7,12 +7,15 @@ import json
 import sys
 from pathlib import Path
 
+from fhrs.connectors.ena import EnaClient
 from fhrs.core.config import get_settings
 from fhrs.core.db import init_schema, make_engine, session_scope
+from fhrs.harvest.ena import harvest_ena
 from fhrs.harvest.ingest import ingest_bytes
 from fhrs.harvest.replay import replay
 from fhrs.rules.checklists import load_registry
 from fhrs.rules.geo import load_geo_context
+from fhrs.stats.build import build_snapshot
 
 
 def _wiring():
@@ -40,6 +43,20 @@ def main(argv: list[str] | None = None) -> int:
 
     sub.add_parser("replay", help="reprocess all stored payloads locally (N2)")
 
+    p_ena = sub.add_parser("ena", help="harvest ENA through the payload store (Stage 1)")
+    p_ena.add_argument(
+        "--full", action="store_true", help="ignore the high-water mark (full re-harvest)"
+    )
+    p_ena.add_argument(
+        "--only-query",
+        default=None,
+        help="run a single discovery query by key (e.g. center:kaust); implies --full",
+    )
+    p_ena.add_argument(
+        "--max-per-query", type=int, default=None, help="cap rows per query (smoke runs)"
+    )
+    p_ena.add_argument("--no-stats", action="store_true", help="skip the stats rebuild")
+
     args = parser.parse_args(argv)
     settings, engine, geo, registry = _wiring()
 
@@ -62,6 +79,30 @@ def main(argv: list[str] | None = None) -> int:
                 session, geo=geo, registry=registry, payload_root=settings.payload_dir
             )
         print(json.dumps(report.__dict__, indent=2))
+        return 0
+
+    if args.command == "ena":
+        profile = settings.load_profile()
+        client = EnaClient()
+        with session_scope(engine) as session:
+            report = harvest_ena(
+                session,
+                client,
+                profile=profile,
+                geo=geo,
+                registry=registry,
+                payload_root=settings.payload_dir,
+                full=args.full or args.only_query is not None,
+                only_query=args.only_query,
+                max_per_query=args.max_per_query,
+            )
+            stats = None
+            if not args.no_stats:
+                stats = build_snapshot(session, settings.country_code, settings.numbers_out)
+        out = report.__dict__ | {"ingest": report.ingest.__dict__}
+        print(json.dumps(out, indent=2, default=str))
+        if stats is not None:
+            print(json.dumps({"stats": stats["samples"]}, indent=2))
         return 0
 
     return 2
