@@ -1,0 +1,14 @@
+{
+  "sample_accession": "SAMEA1110001",
+  "study_accession": "PRJEB1000",
+  "study_title": "Red Sea coastal metagenomes",
+  "description": "Metagenomic survey of Red Sea coastal waters near Thuwal",
+  "country": "Saudi Arabia: Thuwal",
+  "lat": "22.31",
+  "lon": "39.10",
+  "collection_date": "2023-05-14",
+  "checklist": "ERC000047",
+  "center_name": "KAUST",
+  "scientific_name": "marine metagenome",
+  "library_strategy": "WGS"
+}

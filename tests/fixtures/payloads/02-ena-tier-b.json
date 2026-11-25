@@ -1,0 +1,10 @@
+{
+  "sample_accession": "SAMEA1110002",
+  "country": "missing",
+  "location": "22 18 0 N 39 6 0 E",
+  "collection_date": "2022-11-02",
+  "checklist": "MIMAG",
+  "center_name": "an unrecognised sequencing centre",
+  "scientific_name": "sediment metagenome",
+  "library_strategy": "AMPLICON"
+}

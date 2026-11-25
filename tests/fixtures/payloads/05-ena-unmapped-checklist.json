@@ -1,0 +1,11 @@
+{
+  "sample_accession": "SAMEA1110003",
+  "study_accession": "PRJEB1000",
+  "country": "Saudi Arabia",
+  "location": "24.7136 N 46.6753 E",
+  "collection_date": "2023-09-01",
+  "checklist": "MADEUP.9.9",
+  "center_name": "KACST",
+  "scientific_name": "human gut metagenome",
+  "library_strategy": "WGS"
+}
