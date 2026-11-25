@@ -40,6 +40,9 @@ class Decision:
     evidence: list[dict[str, Any]] = field(default_factory=list)
     marine_eez: bool = False
     needs_geo_curation: bool = False
+    # parsed coordinates, when the payload yielded any — persisted by harvest so a
+    # location string is never classified and then thrown away
+    coords: tuple[float, float] | None = None
 
 
 def _explicit_other_country(country_raw: str | None) -> bool:
@@ -82,7 +85,7 @@ def classify(
                     "matched": None,
                 }
             )
-        return Decision("A", evidence, marine_eez=(where == "eez"))
+        return Decision("A", evidence, marine_eez=(where == "eez"), coords=coords)
 
     if gaz_curie and gaz_curie in ctx.gaz_curies:
         evidence.append(
@@ -93,7 +96,7 @@ def classify(
                 "matched": ctx.gaz_root,
             }
         )
-        return Decision("A", evidence, marine_eez=(where == "eez"))
+        return Decision("A", evidence, marine_eez=(where == "eez"), coords=coords)
 
     if _explicit_other_country(country_raw):
         # names another place (or a multi-country blob) → out of lens, whatever the
@@ -113,7 +116,7 @@ def classify(
         evidence.append(
             {"rule": "coordinates", "field": "location", "value": coords, "matched": where}
         )
-        return Decision("B", evidence, marine_eez=(where == "eez"))
+        return Decision("B", evidence, marine_eez=(where == "eez"), coords=coords)
 
     for fld, text in (("center_name", center_name), ("study_text", study_text)):
         inst = match_institution(text, ctx)

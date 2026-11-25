@@ -11,14 +11,14 @@
 """
 
 import enum
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class Base(DeclarativeBase):
@@ -138,8 +138,9 @@ class AttributeHistory(Base):
     key: Mapped[str] = mapped_column(String(64))
     old_value: Mapped[str | None] = mapped_column(Text, nullable=True)
     new_value: Mapped[str] = mapped_column(Text)
-    # "filled" (was null) or "replaced" (newer source won a conflict). "erased" is not
-    # a value this column can ever hold — null never overwrites (N1).
+    # "filled" (was null) or "conflict_kept" (a differing candidate lost to the
+    # existing value and is audited here). "erased" is not a value this column can
+    # ever hold — null never overwrites (N1).
     action: Mapped[str] = mapped_column(String(16))
     source: Mapped[str] = mapped_column(String(16))
     event_id: Mapped[int | None] = mapped_column(ForeignKey("source_events.id"), nullable=True)
@@ -154,6 +155,11 @@ class UnmappedChecklist(Base):
     checklist_id: Mapped[str] = mapped_column(String(128), primary_key=True)
     occurrences: Mapped[int] = mapped_column(Integer, default=1)
     example_accession: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # idempotence guard: a replay reprocesses the same source events, so an event
+    # counts only once no matter how many times it passes through the pipeline (N2)
+    last_event_id: Mapped[int | None] = mapped_column(
+        ForeignKey("source_events.id"), nullable=True
+    )
     first_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     last_seen: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow

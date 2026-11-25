@@ -10,8 +10,8 @@ Study-less samples keep study_id NULL — no sentinel studies (N4).
 """
 
 import json
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass, field, replace
+from datetime import UTC, datetime
 from pathlib import Path
 
 from sqlalchemy import select
@@ -31,7 +31,7 @@ from fhrs.core.models import (
     UnmappedChecklist,
     Visibility,
 )
-from fhrs.harvest.payloads import load_payload, store_payload
+from fhrs.harvest.payloads import store_payload
 from fhrs.rules import merge as merge_rules
 from fhrs.rules.checklists import ChecklistRegistry
 from fhrs.rules.geo import GeoContext
@@ -59,7 +59,6 @@ class IngestReport:
     samples_merged: int = 0
     dropped_out_of_scope: int = 0
     attributes_filled: int = 0
-    attributes_replaced: int = 0
     conflicts_kept: int = 0
     unmapped_checklists: list[str] = field(default_factory=list)
 
@@ -75,9 +74,9 @@ def ingest_bytes(
     fetched_at: datetime | None = None,
 ) -> IngestReport:
     report = IngestReport()
-    fetched_at = fetched_at or datetime.now(timezone.utc)
+    fetched_at = fetched_at or datetime.now(UTC)
     record = normalize(source, json.loads(data))
-    path, sha = store_payload(payload_root, source, record.primary_accession, data)
+    relative, sha = store_payload(payload_root, source, record.primary_accession, data)
     if session.scalar(select(SourceEvent).where(SourceEvent.payload_sha256 == sha)):
         report.skipped_duplicates += 1
         return report
@@ -85,7 +84,7 @@ def ingest_bytes(
         source=source,
         accession=record.primary_accession,
         fetched_at=fetched_at,
-        payload_path=str(path),
+        payload_path=str(relative),
         payload_sha256=sha,
     )
     session.add(event)
@@ -121,11 +120,18 @@ def apply_record(
         report.dropped_out_of_scope += 1
         return None
 
+    if decision.coords and record.lat is None and record.lon is None:
+        # The location string classified this record; persist the parsed coordinates
+        # too (provenance: this event's payload), never leaving them in a string.
+        record = replace(
+            record, lat=str(decision.coords[0]), lon=str(decision.coords[1])
+        )
+
     sample = _resolve_sample(session, record, event, report)
     _merge_attributes(session, sample, record, event, report)
     _apply_inclusion(sample, decision_fields=(decision.tier, decision.marine_eez, decision.evidence, decision.needs_geo_curation))
     _link_study(session, sample, record)
-    _bucket_checklist(session, sample, record, registry, report)
+    _bucket_checklist(session, sample, record, registry, report, event_id=event.id)
     if decision.needs_geo_curation:
         _flag_for_curation(session, sample, decision.evidence)
     return sample
@@ -186,20 +192,25 @@ def _merge_attributes(
         if outcome.action == "keep":
             continue
         if outcome.action == "conflict":
-            # Resolve by recency: the newer event wins; the audit row preserves the loser.
-            current_attr = session.get(SampleAttribute, (sample.id, key))
-            current_time = current_attr.updated_at if current_attr else sample.updated_at
-            if event.fetched_at < current_time:
-                report.conflicts_kept += 1
-                continue
-            action = "replaced"
-        else:
-            action = "filled"
-        _set_field(session, sample, key, outcome.value, action, event)
-        if action == "filled":
-            report.attributes_filled += 1
-        else:
-            report.attributes_replaced += 1
+            # First-writer-wins: the existing value stays; the losing candidate is
+            # audited so conflicts are visible and replay order stays deterministic.
+            # Deliberate corrections are a curation action (Stage 3), not a side
+            # effect of whichever payload arrived last.
+            report.conflicts_kept += 1
+            session.add(
+                AttributeHistory(
+                    sample_id=sample.id,
+                    key=key,
+                    old_value=str(current),
+                    new_value=outcome.value,
+                    action="conflict_kept",
+                    source=event.source,
+                    event_id=event.id,
+                )
+            )
+            continue
+        _set_field(session, sample, key, outcome.value, "filled", event)
+        report.attributes_filled += 1
 
 
 def _set_field(
@@ -272,6 +283,7 @@ def _bucket_checklist(
     record: NormalizedRecord,
     registry: ChecklistRegistry,
     report: IngestReport,
+    event_id: int | None = None,
 ) -> None:
     if not record.checklist_id:
         return
@@ -282,10 +294,12 @@ def _bucket_checklist(
             row = UnmappedChecklist(
                 checklist_id=record.checklist_id,
                 example_accession=record.primary_accession,
+                last_event_id=event_id,
             )
             session.add(row)
-        else:
+        elif row.last_event_id != event_id:
             row.occurrences += 1
+            row.last_event_id = event_id
         if record.checklist_id not in report.unmapped_checklists:
             report.unmapped_checklists.append(record.checklist_id)
     else:
