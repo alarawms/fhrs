@@ -1,8 +1,8 @@
 """Per-key attribute merge decision (PROMPT.md N1). Pure.
 
 Null/empty never overwrites a known value. Conflicts (both sides known, differing)
-are surfaced for the caller to resolve — harvest resolves by source recency and
-records a history row — because only the caller knows event times.
+are surfaced for the caller to resolve — harvest keeps the existing value and writes
+an audit row (first-writer-wins, deterministic under replay).
 """
 
 from dataclasses import dataclass

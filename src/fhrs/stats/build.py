@@ -4,7 +4,7 @@ and papers consume the snapshot — nothing else computes aggregates (N6).
 """
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from sqlalchemy import func, select
@@ -77,7 +77,7 @@ def compute_payload(session: Session, country_code: str) -> dict:
     n_public, n_curation = count(public), count(curation)
     return {
         "country_code": country_code,
-        "built_at": datetime.now(timezone.utc).isoformat(),
+        "built_at": datetime.now(UTC).isoformat(),
         "samples": {
             "total": n_public + n_curation,
             "public": n_public,

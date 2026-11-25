@@ -9,11 +9,11 @@ import re
 _MISSING = {"", "missing", "not collected", "not applicable", "na", "n/a", "unknown"}
 _DEC = re.compile(
     r"^\s*(-?\d+(?:\.\d+)?)\s*°?\s*([NS])?[\s,;]+(-?\d+(?:\.\d+)?)\s*°?\s*([EW])?\s*$",
-    re.I,
+    re.IGNORECASE,
 )
 _DMS = re.compile(
     r"(\d+)\s*[°\s]\s*(\d+(?:\.\d+)?)\s*['′\s]?\s*(\d+(?:\.\d+)?)?\s*[\"″]?\s*([NSEW])",
-    re.I,
+    re.IGNORECASE,
 )
 
 

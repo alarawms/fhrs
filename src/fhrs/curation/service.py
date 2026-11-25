@@ -3,15 +3,15 @@
 its violations, never queued.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
 from fhrs.core.models import CurationEvent, Sample
 from fhrs.curation.policy import (
     TRANSITIONS,
-    AllowedAction,
     ActorKind,
+    AllowedAction,
     SampleContext,
     check,
 )
@@ -58,7 +58,7 @@ def propose(
 
 def resolve(session: Session, event: CurationEvent, sample: Sample, *, approved: bool) -> None:
     event.status = "applied" if approved else "rejected"
-    event.resolved_at = datetime.now(timezone.utc)
+    event.resolved_at = datetime.now(UTC)
     if not approved:
         return
     new_visibility, new_needs = TRANSITIONS[AllowedAction(event.action)]
