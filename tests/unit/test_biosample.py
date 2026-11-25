@@ -58,6 +58,17 @@ def test_ddbj_dict_branch_flat():
     assert "lat" not in p and "lon" not in p
 
 
+def test_sample_name_id_is_not_an_accession():
+    """Regression (live smoke, 2026-11-25): NCBI's `<Id db_label="Sample name">`
+    carries the submitter's free-text sample name — no db attribute, not an
+    accession. It must never land in the alias table."""
+    el = _xml_samples()["SAMN65762509"]
+    p = BiosampleNormalizer("SAMN65762509").flat(el)
+    secondary = p.get("secondary_sample_accession")
+    assert secondary is None or " " not in secondary
+    assert "Salmonella" not in (secondary or "")
+
+
 def test_lat_lon_hemisphere_tokens_split():
     node = {
         "Attributes": {

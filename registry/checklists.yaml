@@ -54,10 +54,13 @@ map:
   # --- NCBI package-style named checklists ---------------------------------------
   # Ambiguous microbial isolate packages (MIGS.ba, Microbe) deliberately map to
   # "other" rather than guess "metagenome" — a reviewed choice (N5), so they must
-  # NOT fall into the unmapped queue.
+  # NOT fall into the unmapped queue. Same for INSDC's generic/default package
+  # (surfaced by the first live DDBJ run, 2026-11-25).
   Microbe: other
   Microbe.1.0: other
   MIGS.ba: other
+  Generic: other
+  Generic.1.0: other
   Metagenome.environmental.1.0: metagenome
   Metagenome or environmental: metagenome
   MIMAG.6.0: metagenome

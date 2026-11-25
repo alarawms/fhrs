@@ -80,6 +80,12 @@ def _iter_children(el: Any, tag: str) -> list[Any]:
         return []
 
 
+def _plausible_accession(s: str) -> bool:
+    """Secondary Ids must look like accessions — short, whitespace-free. This keeps
+    submitter free-text (sample names, strain descriptions) out of the alias table."""
+    return len(s) <= 40 and not any(c.isspace() for c in s)
+
+
 class BiosampleNormalizer:
     """Turn an NCBI ``<BioSample>`` Element or a DDBJ ``properties.BioSample`` dict
     into the flat payload dict ``fhrs.connectors.insdc.normalize`` consumes."""
@@ -92,23 +98,27 @@ class BiosampleNormalizer:
         out: dict[str, Any] = {"sample_accession": self.accession}
 
         # Ids → secondary accession (SRA sample id, GenBank, ...). The primary
-        # BioSample Id is the accession itself; skip it.
+        # BioSample Id is the accession itself; skip it. Entries WITHOUT a database
+        # (`db`, or `namespace` on the DDBJ JSON-LD side) are not accessions at all —
+        # e.g. NCBI's `<Id db_label="Sample name">` is the submitter's free-text
+        # sample name, which must never become an accession alias.
         secondary: list[str] = []
         if is_el:
             for i in _iter_children(node.find("Ids"), "Id"):
                 content = _txt(i.text)
                 if i.get("db") == "BioSample" and i.get("is_primary") == "1":
                     continue
-                if content:
+                if content and i.get("db") and _plausible_accession(content):
                     secondary.append(content)
         else:
             for i in (node.get("Ids") or {}).get("Id") or []:
                 if not isinstance(i, dict):
                     continue
                 content = _txt(i.get("content"))
-                if i.get("db") == "BioSample" and str(i.get("is_primary")) == "1":
+                db = i.get("db") or i.get("namespace")
+                if db == "BioSample" and str(i.get("is_primary")) == "1":
                     continue
-                if content:
+                if content and db and _plausible_accession(content):
                     secondary.append(content)
         if secondary:
             out["secondary_sample_accession"] = secondary[0]
