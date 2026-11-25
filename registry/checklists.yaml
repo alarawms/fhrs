@@ -1,0 +1,108 @@
+# Checklist → content-type registry (PROMPT.md N5).
+#
+# Data, not code. Ingest looks up each sample's checklist *base id* (the part before
+# the first ":") here. An id that is missing is a LOUD event: the record is counted in
+# the unmapped queue and the coverage test fails — never silently bucketed "other".
+# "other" is a deliberate, reviewable mapping for ambiguous checklists, not a fallback.
+#
+# When adding an id, add a comment saying what the checklist actually is, and extend
+# the fixture corpus so the coverage test can see it.
+buckets: [metagenome, pathogen, human, environmental, plant, soil, host_associated, other]
+
+map:
+  # --- ENA/GSC ERC-coded checklists ---------------------------------------------
+  # GSC MIMAGS, ENA Tara Oceans, ENA Micro B3, ENA binned metagenome, UniEuk_EukBank.
+  ERC000047: metagenome
+  ERC000030: metagenome
+  ERC000027: metagenome
+  ERC000050: metagenome
+  ERC000040: metagenome
+  # ENA prokaryotic pathogen minimal, ENA virus pathogen reporting standard, GMI
+  # reporting standard, GMI Proficiency Test, ENA Influenza virus reporting standard.
+  ERC000028: pathogen
+  ERC000033: pathogen
+  ERC000029: pathogen
+  ERC000041: pathogen
+  ERC000032: pathogen
+  # GSC MIxS human gut/associated/oral, COMPARE-ECDC-EFSA human-associated, EGA default.
+  ERC000015: human
+  ERC000014: human
+  ERC000016: human
+  ERC000044: human
+  ERC000026: human
+  # ENA sewage, GSC MIxS wastewater sludge/misc-environment/water/air/sediment/
+  # microbial-mat.
+  ERC000036: environmental
+  ERC000023: environmental
+  ERC000025: environmental
+  ERC000024: environmental
+  ERC000012: environmental
+  ERC000021: environmental
+  ERC000019: environmental
+  # ENA Crop Plant enhanced annotation, GSC MIxS plant-associated, ENA Plant Sample.
+  ERC000035: plant
+  ERC000020: plant
+  ERC000037: plant
+  # GSC MIxS soil.
+  ERC000022: soil
+  # GSC MIxS host associated — generic non-human host, no stronger signal available.
+  ERC000013: host_associated
+
+  # --- NCBI package-style named checklists ---------------------------------------
+  # Ambiguous microbial isolate packages (MIGS.ba, Microbe) deliberately stay
+  # "other" rather than guess "metagenome".
+  Metagenome.environmental.1.0: metagenome
+  Metagenome or environmental: metagenome
+  MIMAG.6.0: metagenome
+  MIMAG: metagenome
+  MIMAG.microbial.6.0: metagenome
+  MIGS/MIMS/MIMARKS.microbial, MIMS.me: metagenome
+  Microbe, viral or environmental: metagenome
+  Pathogen.cl.1.0: pathogen
+  Pathogen.cl: pathogen
+  Pathogen.env.1.0: pathogen
+  SARS-CoV-2.cl.1.0: pathogen
+  OneHealthEnteric.1.0: pathogen
+  Human.1.0: human
+  MIMS.me.human-gut.6.0: human
+  MIMARKS.survey.human-gut.6.0: human
+  MIMARKS.survey.human-oral.6.0: human
+  MIMS.me.human-oral.6.0: human
+  MIMARKS.survey.human-vaginal.6.0: human
+  MIMARKS.survey.human-associated.6.0: human
+  MIMS.me.host-associated.6.0: host_associated
+  MIGS/MIMS/MIMARKS.host-associated, MIMS.me: host_associated
+  MIGS/MIMS/MIMARKS.host-associated, MIMARKS.specimen: host_associated
+  MIGS/MIMS/MIMARKS.host-associated, MIMARKS.survey: host_associated
+  MIMARKS.survey.host-associated.6.0: host_associated
+  MIMAG.host-associated.6.0: host_associated
+  MIGS.ba.host-associated.6.0: host_associated
+  Invertebrate.1.0: host_associated
+  Invertebrate: host_associated
+  Model.organism.animal.1.0: host_associated
+  Model organism or animal: host_associated
+  Plant.1.0: plant
+  Plant: plant
+  MIMARKS.survey.plant-associated.6.0: plant
+  MIGS.ba.plant-associated.6.0: plant
+  MIMAG.plant-associated.6.0: plant
+  MIMARKS.survey.soil.6.0: soil
+  MIMAG.soil.6.0: soil
+  MIMS.me.soil.6.0: soil
+  MIMARKS.survey.water.6.0: environmental
+  MIGS/MIMS/MIMARKS.water, MIMS.me: environmental
+  MIGS/MIMS/MIMARKS.water, MIMARKS.survey: environmental
+  MIMS.me.water.6.0: environmental
+  MIMS.me.water: environmental
+  MIMAG.water.6.0: environmental
+  MIMAG.wastewater.6.0: environmental
+  MIGS/MIMS/MIMARKS.wastewater, MIMS.me: environmental
+  MIMARKS.survey.wastewater.6.0: environmental
+  MISAG.water.6.0: environmental
+  MIMS.me.sediment.6.0: environmental
+  MIGS/MIMS/MIMARKS.sediment, MIMS.me: environmental
+  MIMARKS.survey.sediment.6.0: environmental
+  MIMAG.sediment.6.0: environmental
+  MIMAG.sediment: environmental
+  MIGS.ba.food-farm_env.6.0: environmental
+  MIGS.ba.food-human_foods.6.0: environmental

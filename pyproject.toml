@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fhrs"
+version = "0.1.0"
+description = "FHRS — a national lens on public genomics"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.2",
+    "alembic>=1.13",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.4",
+    "pyyaml>=6.0",
+    "shapely>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "hypothesis>=6.100",
+    "httpx>=0.27",
+    "ruff>=0.6",
+    "import-linter>=2.0",
+    "testcontainers[postgres]>=4.7",
+]
+
+[project.scripts]
+fhrs-harvest = "fhrs.harvest.cli:main"
+fhrs-stats = "fhrs.stats.cli:main"
+fhrs-doctor = "fhrs.core.doctor:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "integration: needs a live Postgres (docker compose up -d db)",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.importlinter]
+root_package = "fhrs"
+
+[[tool.importlinter.contracts]]
+name = "rules is pure (no I/O, no settings)"
+type = "forbidden"
+source_modules = ["fhrs.rules"]
+forbidden_modules = [
+    "fhrs.core",
+    "fhrs.harvest",
+    "fhrs.api",
+    "sqlalchemy",
+    "psycopg",
+]
+
+[[tool.importlinter.contracts]]
+name = "layers: api/curation/harvest may use core+rules, never each other's internals"
+type = "layers"
+layers = [
+    "fhrs.api",
+    "fhrs.curation",
+    "fhrs.harvest",
+    "fhrs.stats",
+    "fhrs.connectors",
+    "fhrs.core",
+    "fhrs.rules",
+]

@@ -1,0 +1,48 @@
+# Country profile — blank template.
+#
+# Copy to countries/<cc>.yaml (lowercase ISO 3166-1 alpha-2) and create the matching
+# data directory countries/<cc>/ . `FHRS_COUNTRY_CODE` in the root .env selects which
+# profile boots. Startup validation (fhrs.core.config) fails fast on any missing file
+# or malformed field — a profile that doesn't validate never serves traffic.
+
+# ISO 3166-1 alpha-2, uppercase. Must match the file name.
+code: XX
+name: Country Name                 # English display name
+name_local: ""                     # endonym, may be ""
+languages: [en]                    # UI languages, first is default
+
+branding:
+  site_name: "FHRS — Country Name"
+  tagline: "A national lens on public genomics"
+  # ISO 4217 or emoji-free short mark used in the header.
+  mark: "XX"
+
+# Data files, relative to this profile's directory countries/<cc>/.
+#   aliases.yaml      country name spellings + sub-locality separators
+#                     (schema: country, gaz_root, sublocality_separators, aliases)
+#   institutions.yaml national institutions with aliases + optional ROR
+#                     (schema: institutions: [{name, aliases, ror, country_check}])
+#   gaz.json          GAZ descendants for Tier-A gazetteer matching
+#                     (schema: {root: "GAZ:xxxxxxx", terms: {CURIE: label, ...}})
+#   boundary.geojson  FeatureCollection with exactly two features whose
+#                     properties.name are "land_and_territorial_waters" and
+#                     "marine_eez" — the Tier-B coordinate test.
+data:
+  aliases: aliases.yaml
+  institutions: institutions.yaml
+  gazetteer: gaz.json
+  boundary: boundary.geojson
+
+# National footprint definition — the inclusion tiers (fhrs.rules.inclusion):
+#   A explicit  : country/geo_loc_name normalises to this country, or a GAZ CURIE
+#                 that is this country or a descendant.
+#   B coordinates: no country string, but coordinates fall inside land or EEZ.
+#   C inferred  : no country/coords, but center/study text names a national
+#                 institution → needs geo curation before going public.
+# Leave tiers untouched unless you are deliberately redefining the lens.
+footprint:
+  tiers: [A, B, C]
+
+# Which upstream archives feed this country's lens.
+sources:
+  insdc: [ena, ncbi, ddbj]

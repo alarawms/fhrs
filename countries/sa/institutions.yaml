@@ -1,0 +1,137 @@
+# Saudi institutions used for Tier-C (inferred, curation-required) candidates. Matching is
+# case-insensitive substring on center_name / study title+abstract. `ror` filled where known.
+institutions:
+  - name: King Abdullah University of Science and Technology
+    aliases:
+      [
+        KAUST,
+        "King Abdullah University of Science and Technology",
+        "King Abdullah Univ",
+        # KAUST centers curator-confirmed as KAUST itself, not a separate institution
+        # (2026-09-27 manual curation round): each is a real center *within* KAUST, seen both
+        # bare and compounded with other text in raw center_name values.
+        "Center for Desert Agriculture",
+        "CDA",
+        "Computational Bioscience Research Center",
+        "Center of Excellence- Sustainability and Food Security",
+        "COE-SFS",
+      ]
+    ror: https://ror.org/01q3tbs38
+    # Left false even though CDA/COE-SFS are less distinctive than KAUST itself: country_check
+    # only relabels fhrs.rules.inclusion's evidence ("institution" vs "institution_hint_only") within a
+    # Tier-C decision that already requires geo-curation review regardless of this flag — it
+    # never bypasses that review, so there's no real safety gain from flipping it, only a
+    # weaker signal on KAUST's own genuinely unambiguous aliases.
+    country_check: false
+  - name: King Abdulaziz City for Science and Technology
+    # KASCT curator-confirmed (2026-09-27): a transposition typo of KACST, not a different
+    # institution.
+    aliases: [KACST, "King Abdulaziz City for Science and Technology", KASCT]
+    ror: null
+    country_check: false
+  - name: King Faisal Specialist Hospital and Research Centre
+    # "KFSH&RC" (with the ampersand) curator-confirmed 2026-09-28: a real, commonly-used
+    # abbreviation for this hospital, distinct from the no-punctuation "KFSHRC" alias below
+    # (the ampersand breaks match_institution's plain substring search against "KFSHRC" alone,
+    # so raw values carrying it were reaching the LLM sweep instead of matching
+    # deterministically — same institution, just an unlisted punctuation variant).
+    aliases: [KFSHRC, "King Faisal Specialist Hospital", "KFSH&RC"]
+    ror: null
+    country_check: false
+  - name: King Saud University
+    aliases: ["King Saud University", KSU]
+    ror: https://ror.org/02f81g417
+    country_check: true      # "KSU" also matches Kansas/Kent/Kennesaw State
+  - name: King Abdulaziz University
+    # The last two are raw-data spelling variants curator-confirmed 2026-09-27 (space between
+    # "Abdul"/"Aziz", plus a "University"/"Univerisity" typo on one of them).
+    aliases:
+      [
+        "King Abdulaziz University",
+        KAU,
+        "King Abdul Aziz University",
+        "King Abdul Aziz Univerisity",
+      ]
+    ror: https://ror.org/02ma4wv74
+    country_check: true      # "KAU" collides with other abbreviations
+  - name: King Fahd University of Petroleum and Minerals
+    aliases: [KFUPM, "King Fahd University of Petroleum"]
+    ror: https://ror.org/0155zta11
+    country_check: false
+  - name: Ministry of Environment, Water and Agriculture
+    # Estidamah ("sustainability" in Arabic) curator-confirmed 2026-09-27 as MEWA's
+    # sustainability center, not a separate institution.
+    aliases: [MEWA, "Ministry of Environment, Water and Agriculture", Estidamah]
+    ror: null
+    country_check: true
+  - name: National Center for Wildlife
+    aliases: [NCW, NCWM, "National Center for Wildlife", "National Centre for Wildlife"]
+    ror: null
+    country_check: true
+  - name: Saudi Ministry of Health
+    aliases: ["Ministry of Health Saudi", "Saudi Ministry of Health", "MOH Saudi"]
+    ror: null
+    country_check: true
+  - name: King Abdullah International Medical Research Center
+    aliases: [KAIMRC, "King Abdullah International Medical Research"]
+    ror: null
+    country_check: false
+  - name: Imam Abdulrahman Bin Faisal University
+    aliases: ["Imam Abdulrahman Bin Faisal University", IAU, "University of Dammam"]
+    ror: null
+    country_check: true
+  - name: Umm Al-Qura University
+    aliases: ["Umm Al-Qura University", "Umm Al Qura"]
+    ror: null
+    country_check: false
+  - name: Taibah University
+    aliases: ["Taibah University"]
+    ror: null
+    country_check: false
+  - name: King Khalid University
+    aliases: ["King Khalid University"]
+    ror: null
+    country_check: false
+  - name: Qassim University
+    aliases: ["Qassim University"]
+    ror: null
+    country_check: false
+  - name: Jazan University
+    aliases: ["Jazan University", "Jizan University"]
+    ror: null
+    country_check: false
+  - name: King Faisal University
+    aliases: ["King Faisal University"]
+    ror: null
+    country_check: false
+  - name: Princess Nourah bint Abdulrahman University
+    aliases: ["Princess Nourah", PNU]
+    ror: null
+    country_check: true
+  - name: Alfaisal University
+    aliases: ["Alfaisal University"]
+    ror: null
+    country_check: false
+  - name: Saudi Aramco
+    aliases: ["Saudi Aramco", Aramco]
+    ror: null
+    country_check: true
+  - name: Red Sea Global
+    aliases: ["Red Sea Global", "Red Sea Development Company"]
+    ror: null
+    country_check: false
+  - name: NEOM
+    aliases: [NEOM]
+    ror: null
+    country_check: true
+  - name: Saudi Public Health Authority
+    # The Jazan lab curator-confirmed 2026-09-27 as a Public Health Authority regional lab.
+    aliases:
+      [
+        "Public Health Authority Saudi",
+        Weqaya,
+        "Saudi CDC",
+        "The Regional Laboratory, Jazan, Saudi Arabia",
+      ]
+    ror: null
+    country_check: true

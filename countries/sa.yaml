@@ -1,0 +1,21 @@
+code: SA
+name: Saudi Arabia
+name_local: "المملكة العربية السعودية"
+languages: [en, ar]
+
+branding:
+  site_name: "FHRS — Saudi Arabia"
+  tagline: "A national lens on public genomics"
+  mark: "SA"
+
+data:
+  aliases: aliases.yaml
+  institutions: institutions.yaml
+  gazetteer: gaz.json
+  boundary: boundary.geojson
+
+footprint:
+  tiers: [A, B, C]
+
+sources:
+  insdc: [ena, ncbi, ddbj]

@@ -1,0 +1,23 @@
+# Spellings that normalise to Saudi Arabia in INSDC `country` / `geo_loc_name` fields.
+# Matching rule (fhrs.rules.geo::normalise_country): the field is lower-cased and
+# whitespace-collapsed; it is KSA iff, after splitting on the first sub-locality separator, the
+# country part equals one of these aliases EXACTLY. A value that merely CONTAINS an alias
+# ("USA:Canada,...,Saudi Arabia,...", "Saudi Arabian Gulf") is NOT KSA.
+country: Saudi Arabia
+gaz_root: GAZ:00005279
+sublocality_separators: [":", " - ", "–", "—", ","]   # "Saudi Arabia: Jeddah", "Saudi Arabia:Thuwal"
+aliases:
+  - saudi arabia
+  - kingdom of saudi arabia
+  - ksa
+  - k.s.a.
+  - k.s.a
+  - saudi-arabia
+  - saudi arabien
+  - arabie saoudite
+  - arabia saudita
+  - saudia
+  - saudi
+  - المملكة العربية السعودية
+  - السعودية
+  - السعوديه
