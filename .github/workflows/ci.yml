@@ -1,0 +1,45 @@
+name: fhrs-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e '.[dev]'
+      - run: ruff check src tests
+      - run: lint-imports
+      - run: pytest tests/unit tests/property -q
+
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: fhrs
+          POSTGRES_PASSWORD: fhrs
+          POSTGRES_DB: fhrs
+        ports: ["15432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U fhrs -d fhrs"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      FHRS_DATABASE_URL: postgresql+psycopg://fhrs:fhrs@localhost:15432/fhrs
+      FHRS_COUNTRY_CODE: SA
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e '.[dev]'
+      - run: alembic upgrade head
+      - run: pytest tests/integration -q -m integration
+      - run: fhrs-doctor

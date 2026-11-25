@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: fhrs
+      POSTGRES_PASSWORD: fhrs
+      POSTGRES_DB: fhrs
+    ports:
+      - "${FHRS_DB_PORT:-15432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fhrs -d fhrs"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build: .
+    # command other than "serve" is exec'd verbatim (N9), e.g.:
+    #   docker compose run --rm api fhrs-harvest ingest-file /payloads/x.json
+    ports:
+      - "${FHRS_API_PORT:-8081}:8081"
+    environment:
+      FHRS_COUNTRY_CODE: ${FHRS_COUNTRY_CODE:?set FHRS_COUNTRY_CODE in the root .env}
+      FHRS_DATABASE_URL: postgresql+psycopg://fhrs:fhrs@db:5432/fhrs
+      FHRS_PAYLOAD_DIR: /data/payloads
+      FHRS_NUMBERS_OUT: /data/build/numbers.json
+      FHRS_DISK_WATERMARK_PCT: ${FHRS_DISK_WATERMARK_PCT:-90}
+    volumes:
+      - payload-data:/data
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  payload-data:

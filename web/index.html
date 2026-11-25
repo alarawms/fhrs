@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FHRS</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 0 auto; max-width: 960px; padding: 2rem 1rem 4rem;
+      }
+      header { border-bottom: 2px solid currentColor; margin-bottom: 1.5rem; }
+      .mark { font-weight: 700; font-size: .9rem; letter-spacing: .08em; opacity: .7; }
+      h1 { margin: .2rem 0; font-size: 1.6rem; }
+      .tagline { opacity: .75; margin-top: 0; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .75rem; }
+      .card { border: 1px solid color-mix(in srgb, currentColor 25%, transparent); border-radius: 8px; padding: .9rem 1rem; }
+      .num { font-size: 1.7rem; font-weight: 650; }
+      .lbl { font-size: .8rem; opacity: .7; }
+      table { border-collapse: collapse; width: 100%; margin-top: .5rem; font-size: .9rem; }
+      td, th { text-align: left; padding: .3rem .5rem; border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
+      section { margin-top: 2rem; }
+      h2 { font-size: 1.05rem; }
+      #status { opacity: .7; font-size: .85rem; }
+      .local-name { font-size: 1rem; opacity: .8; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="mark" id="mark">FHRS</div>
+      <h1 id="site-name">…</h1>
+      <p class="local-name" id="local-name"></p>
+      <p class="tagline" id="tagline"></p>
+    </header>
+    <p id="status">loading…</p>
+    <div class="grid" id="cards" hidden>
+      <div class="card"><div class="num" id="n-total">–</div><div class="lbl">public samples</div></div>
+      <div class="card"><div class="num" id="n-studies">–</div><div class="lbl">studies</div></div>
+      <div class="card"><div class="num" id="n-coords">–</div><div class="lbl">with coordinates</div></div>
+      <div class="card"><div class="num" id="n-marine">–</div><div class="lbl">marine (EEZ)</div></div>
+      <div class="card"><div class="num" id="n-curation">–</div><div class="lbl">in curation</div></div>
+      <div class="card"><div class="num" id="n-dropped">–</div><div class="lbl">out of scope</div></div>
+    </div>
+    <section id="tiers-section" hidden>
+      <h2>Samples by inclusion tier</h2>
+      <table>
+        <thead><tr><th>Tier</th><th>Meaning</th><th>Samples</th></tr></thead>
+        <tbody id="tiers"></tbody>
+      </table>
+    </section>
+    <section id="buckets-section" hidden>
+      <h2>Public samples by content type</h2>
+      <table>
+        <thead><tr><th>Content type</th><th>Samples</th></tr></thead>
+        <tbody id="buckets"></tbody>
+      </table>
+    </section>
+    <script src="/app.js"></script>
+  </body>
+</html>
