@@ -35,6 +35,19 @@ def test_discovery_queries_country_first_and_overrides():
     assert qs[2] == ("org:kaust", "KAUST[Organization]")
 
 
+def test_non_ascii_aliases_require_override():
+    """Regression (live incident 2026-11-26): an Arabic alias under the default rule
+    became a per-word All-Fields OR and matched 390k+ records. Non-ASCII aliases are
+    skipped unless a wire-verified override exists."""
+    qs = discovery_queries(["saudi", "السعودية"], [], {})
+    assert qs == [("country:saudi", "saudi[geo_loc_name]")]
+    qs = discovery_queries(["saudi", "السعودية"], [], {"السعودية": '"السعودية"[geo_loc_name]'})
+    assert qs == [
+        ("country:saudi", "saudi[geo_loc_name]"),
+        ("country:السعودية", '"السعودية"[geo_loc_name]'),
+    ]
+
+
 def test_esearch_params_wire_shape():
     p = esearch_params('"Saudi Arabia"[geo_loc_name]', 500, retstart=500, mindate="2026-01-01")
     assert p == {

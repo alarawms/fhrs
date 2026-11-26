@@ -10,6 +10,11 @@ system (2026-10-01) and ported deliberately:
   phrase matches ("Saudi Arabia"[geo_loc_name]). Institution terms ride
   ``[Organization]`` — a controlled text index on the submitting institution; the
   acronym and full name are both indexed ("KAUST"[Organization] → 23,260).
+- Non-ASCII aliases are never queried with the default rule: NCBI cannot
+  phrase-match a quoted Arabic string and backs off to a per-word All-Fields OR —
+  verified the hard way 2026-11-26, when one Arabic alias matched 390k+ records
+  (a whole-corpus query). Non-ASCII country terms require a wire-verified
+  ``ncbi_queries`` override, exactly ENA's posture for multi-word wildcards.
 - Incremental caveat: NCBI's ``edat``/``supdate`` date filters do NOT constrain the
   country terms (a 2026 window returned 0 for a project known to contain 2026
   records). An incremental run therefore re-discovers the full corpus; correctness
@@ -57,12 +62,24 @@ def discovery_queries(
     """(query_key, esearch term) pairs: country terms first (reconcilable), then
     institution terms (Tier-C candidates). Per-alias ``ncbi_queries`` overrides in
     the profile's aliases.yaml carry the wire-verified term where the default
-    doesn't work."""
+    doesn't work.
+
+    Non-ASCII aliases are SKIPPED without an explicit override (verified the hard
+    way 2026-11-26: NCBI cannot phrase-match a quoted Arabic string, backs off to
+    a per-word All-Fields OR, and one such alias matched 390k+ records — a
+    whole-corpus query. Same posture as ENA's multi-word rule: never guess a query
+    form for a language the index doesn't handle; require a wire-verified string).
+    """
     overrides = overrides or {}
     out: list[tuple[str, str]] = []
     for alias in aliases:
         key = alias.strip().lower()
-        out.append((f"country:{key}", overrides.get(key, country_term(alias))))
+        if key in overrides:
+            out.append((f"country:{key}", overrides[key]))
+        elif alias.strip().isascii():
+            out.append((f"country:{key}", country_term(alias)))
+        # else: skipped loudly — the harvest report counts only emitted queries,
+        # and the profile documents which aliases need overrides (template.yaml).
     for alias in institution_aliases:
         key = alias.strip().lower()
         out.append((f"org:{key}", institution_term(alias)))
