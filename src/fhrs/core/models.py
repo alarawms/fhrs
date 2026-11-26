@@ -79,7 +79,7 @@ class Sample(Base):
     content_bucket: Mapped[str | None] = mapped_column(String(32), nullable=True)
     lat: Mapped[float | None] = mapped_column(Float, nullable=True)
     lon: Mapped[float | None] = mapped_column(Float, nullable=True)
-    collection_date: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    collection_date: Mapped[str | None] = mapped_column(String(96), nullable=True)
     scientific_name: Mapped[str | None] = mapped_column(Text, nullable=True)
     library_strategy: Mapped[str | None] = mapped_column(String(64), nullable=True)
     country_raw: Mapped[str | None] = mapped_column(Text, nullable=True)
