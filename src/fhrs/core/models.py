@@ -113,7 +113,7 @@ class MergeEvent(Base):
     canonical_sample_id: Mapped[int] = mapped_column(ForeignKey("samples.id"))
     merged_accession: Mapped[str] = mapped_column(String(64))
     reason: Mapped[str] = mapped_column(Text)
-    event_id: Mapped[int | None] = mapped_column(ForeignKey("source_events.id"), nullable=True)
+    event_id: Mapped[int | None] = mapped_column(ForeignKey("source_events.id"), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
@@ -124,7 +124,7 @@ class SampleAttribute(Base):
     key: Mapped[str] = mapped_column(String(64), primary_key=True)
     value: Mapped[str] = mapped_column(Text)
     source: Mapped[str] = mapped_column(String(16))
-    event_id: Mapped[int | None] = mapped_column(ForeignKey("source_events.id"), nullable=True)
+    event_id: Mapped[int | None] = mapped_column(ForeignKey("source_events.id"), nullable=True, index=True)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
     )
@@ -143,7 +143,7 @@ class AttributeHistory(Base):
     # ever hold — null never overwrites (N1).
     action: Mapped[str] = mapped_column(String(16))
     source: Mapped[str] = mapped_column(String(16))
-    event_id: Mapped[int | None] = mapped_column(ForeignKey("source_events.id"), nullable=True)
+    event_id: Mapped[int | None] = mapped_column(ForeignKey("source_events.id"), nullable=True, index=True)
     changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
@@ -157,7 +157,7 @@ class UnmappedChecklist(Base):
     example_accession: Mapped[str | None] = mapped_column(String(64), nullable=True)
     # idempotence guard: a replay reprocesses the same source events, so an event
     # counts only once no matter how many times it passes through the pipeline (N2)
-    last_event_id: Mapped[int | None] = mapped_column(ForeignKey("source_events.id"), nullable=True)
+    last_event_id: Mapped[int | None] = mapped_column(ForeignKey("source_events.id"), nullable=True, index=True)
     first_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     last_seen: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow

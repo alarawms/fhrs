@@ -2,6 +2,12 @@
 
 Covers acceptance invariant 8 (no sentinel representation of study-less samples)
 and the alembic-built schema end to end.
+
+The suite OWNS its database: it truncates every table, harvest cursors included.
+It therefore must never point at the database the compose stack is harvesting
+into (learned the hard way twice on 2026-11-26). Locally it creates and uses a
+dedicated `fhrs_test` database on the same instance; CI's postgres service is
+disposable and needs no such guard.
 """
 
 import os
@@ -15,11 +21,27 @@ from fhrs.stats.build import build_snapshot
 
 pytestmark = pytest.mark.integration
 
-DB_URL = os.environ.get("FHRS_DATABASE_URL", "postgresql+psycopg://fhrs:fhrs@localhost:15432/fhrs")
+DB_URL = os.environ.get(
+    "FHRS_TEST_DATABASE_URL", "postgresql+psycopg://fhrs:fhrs@localhost:15432/fhrs_test"
+)
+
+
+def _ensure_test_database() -> None:
+    """Create fhrs_test on the local instance if absent (no-op in CI)."""
+    admin = create_engine(DB_URL.rsplit("/", 1)[0] + "/postgres", isolation_level="AUTOCOMMIT")
+    db_name = DB_URL.rsplit("/", 1)[1]
+    with admin.connect() as conn:
+        exists = conn.scalar(
+            text("select 1 from pg_database where datname = :n"), {"n": db_name}
+        )
+        if not exists:
+            conn.execute(text(f'create database "{db_name}"'))
+    admin.dispose()
 
 
 @pytest.fixture(scope="module")
 def pg_engine():
+    _ensure_test_database()
     engine = create_engine(DB_URL)
     with engine.connect() as conn:
         conn.execute(text("select 1"))
