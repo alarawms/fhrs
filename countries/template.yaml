@@ -34,7 +34,10 @@ branding:
 #                     is unreliable in quoted strings containing whitespace.
 #                     Verify against the live API before adding one.
 #   ncbi_queries      map of lowercase alias → wire-verified NCBI esearch term.
-#                     Default: `<alias>[geo_loc_name]`, quoted when multi-word.
+#                     Default (ASCII aliases only): `<alias>[geo_loc_name]`,
+#                     quoted when multi-word. Non-ASCII aliases are SKIPPED
+#                     without an override — NCBI can't phrase-match them and a
+#                     guess becomes a whole-corpus query (verified 2026-11-26).
 #   ddbj_queries      map of lowercase alias → wire-verified DDBJ geoLocName
 #                     value. geoLocName is a PREFIX match, so the shortest
 #                     distinctive form usually wins; default is the alias as-is.
