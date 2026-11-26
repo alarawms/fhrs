@@ -35,6 +35,9 @@ def pg_engine():
         "source_events",
         "unmapped_checklists",
         "stats_snapshots",
+        # the suite owns the whole dev database — cursors included. Never run it
+        # against a database that is mid-harvest (learned the hard way 2026-11-26).
+        "harvest_states",
     ):
         with engine.begin() as conn:
             conn.execute(text(f"truncate table {table} cascade"))
